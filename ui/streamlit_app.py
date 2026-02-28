@@ -134,78 +134,73 @@ if st.session_state.match_result and st.session_state.match_result["matched_skil
     )
 
     # -----------------------------
-# 🟢 OFFLINE MODE
-# -----------------------------
-if interview_mode == "Offline Interview":
+    # 🟢 OFFLINE MODE
+    # -----------------------------
+    if interview_mode == "Offline Interview":
 
-    if st.button("Generate Offline Interview Questions"):
+        if st.button("Generate Offline Interview Questions"):
 
-        with st.spinner("Generating questions and reference answers..."):
-            interview_content = generate_offline_interview(
-                st.session_state.jd_skills,
-                st.session_state.match_result["matched_skills"],
-                difficulty
-            )
+            with st.spinner("Generating questions and reference answers..."):
+                interview_content = generate_offline_interview(
+                    st.session_state.jd_skills,
+                    st.session_state.match_result["matched_skills"],
+                    difficulty
+                )
 
-        # Store generated content
-        st.session_state.offline_content = interview_content
+            st.session_state.offline_content = interview_content
 
+        if "offline_content" in st.session_state:
+
+            st.subheader("📋 Interview Questions")
+
+            content = st.session_state.offline_content
+            blocks = content.split("Q")
+            total_score = 0
+            question_number = 1
+
+            for block in blocks:
+                if block.strip() == "":
+                    continue
+
+                question_block = "Q" + block.strip()
+                parts = question_block.split("Answer:")
+
+                question_text = parts[0].strip()
+                answer_text = parts[1].strip() if len(parts) > 1 else "No reference answer."
+
+                st.markdown(f"### {question_text}")
+
+                with st.expander("📘 View Reference Answer"):
+                    st.write(answer_text)
+
+                score = st.slider(
+                    f"Score for Question {question_number}",
+                    0, 10, 5,
+                    key=f"score_{question_number}"
+                )
+
+                total_score += score
+                question_number += 1
+
+            st.divider()
+
+            st.subheader("📝 Interviewer Notes")
+            st.text_area("Write observations about candidate performance")
+
+            st.divider()
+
+            st.subheader("📊 Final Score")
+            st.metric("Total Score (Out of 50)", total_score)
+
+            if total_score >= 40:
+                st.success("Recommendation: Strong Hire")
+            elif total_score >= 30:
+                st.info("Recommendation: Consider")
+            else:
+                st.error("Recommendation: Not Recommended")
 
     # -----------------------------
-    # Display Questions + Scoring
+    # 🔵 ONLINE MODE
     # -----------------------------
-    if "offline_content" in st.session_state:
-
-        st.subheader("📋 Interview Questions")
-
-        content = st.session_state.offline_content
-
-        # Split questions
-        blocks = content.split("Q")
-        total_score = 0
-
-        for i, block in enumerate(blocks):
-            if block.strip() == "":
-                continue
-
-            question_block = "Q" + block.strip()
-
-            parts = question_block.split("Answer:")
-            question_text = parts[0].strip()
-            answer_text = parts[1].strip() if len(parts) > 1 else "No reference answer."
-
-            st.markdown(f"### {question_text}")
-
-            with st.expander("📘 View Reference Answer"):
-                st.write(answer_text)
-
-            score = st.slider(
-                f"Score for Question {i}",
-                0, 10, 5,
-                key=f"score_{i}"
-            )
-
-            total_score += score
-
-        st.divider()
-
-        st.subheader("📝 Interviewer Notes")
-        notes = st.text_area("Write observations about candidate performance")
-
-        st.divider()
-
-        st.subheader("📊 Final Score")
-        st.metric("Total Score (Out of 50)", total_score)
-
-        if total_score >= 40:
-            st.success("Recommendation: Strong Hire")
-        elif total_score >= 30:
-            st.info("Recommendation: Consider")
-        else:
-            st.error("Recommendation: Not Recommended")
-
-    # -----------------------------
-    # 🔵 ONLINE MODE (Coming Next)
-    # -----------------------------
-    if interview_mode == "Online Interview":
+    elif interview_mode == "Online Interview":
         st.info("Online Interview Mode will be implemented next.")
